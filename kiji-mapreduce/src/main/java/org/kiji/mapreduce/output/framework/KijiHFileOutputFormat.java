@@ -28,6 +28,7 @@ import java.util.Map;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -220,13 +221,13 @@ public final class KijiHFileOutputFormat
       @Override
       public void close(TaskAttemptContext context) throws IOException {
         if (null != mWriter) {
-          if (mCurrentHFileSize > 0) {
-            // Write out a timerange. This is the only Metadata we write out.
-            // See: HBASE-8055 and KIJIMR-204.
-            mWriter.appendFileInfo(StoreFile.TIMERANGE_KEY,
-                WritableUtils.toByteArray(mTimeRangeTracker));
-          }
-          mTimeRangeTracker = new TimeRangeTracker();
+//          if (mCurrentHFileSize > 0) {
+//            // Write out a timerange. This is the only Metadata we write out.
+//            // See: HBASE-8055 and KIJIMR-204.
+//            mWriter.appendFileInfo(StoreFile.TIMERANGE_KEY,
+//                WritableUtils.toByteArray(mTimeRangeTracker));
+//          }
+//          mTimeRangeTracker = new TimeRangeTracker();
           closeWriter(mWriter);
         }
       }
@@ -272,6 +273,13 @@ public final class KijiHFileOutputFormat
         final String taskAttemptID = mContext.getTaskAttemptID().toString();
         hfileWriter.appendFileInfo(StoreFile.BULKLOAD_TASK_KEY, toBytes(taskAttemptID));
         hfileWriter.appendFileInfo(StoreFile.MAJOR_COMPACTION_KEY, toBytes(true));
+
+        // Write out a timerange. This is the only Metadata we write out.
+        // See: HBASE-8055 and KIJIMR-204.
+        mWriter.appendFileInfo(StoreFile.TIMERANGE_KEY,
+            WritableUtils.toByteArray(mTimeRangeTracker));
+
+        mTimeRangeTracker = new TimeRangeTracker();
 
         ResourceUtils.closeOrLog(hfileWriter);
       }
